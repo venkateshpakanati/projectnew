@@ -50,13 +50,13 @@
 
 
 	  
-	<!-- <distributionManagement>
+	<distributionManagement>
 		<repository>
 			<id>central</id>
 			<name>venkateshmaven-artifactory-primary-0-releases</name>
-			<url>https://venkateshmaven.jfrog.io/artifactory/libs-release</url>
+			<url>http://172.42.42.104:8081/artifactory/libs-release</url>
 		</repository>
-	</distributionManagement> -->
+	</distributionManagement>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
