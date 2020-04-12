@@ -15,7 +15,22 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
-	  <repositories>
+	  
+	  <servers>
+    <server>
+      <username>admin</username>
+      <password>AP9YMHJpDaRrnUzzyY7e452G742</password>
+      <id>central</id>
+    </server>
+    <server>
+      <username>admin</username>
+      <password>AP9YMHJpDaRrnUzzyY7e452G742</password>
+      <id>snapshots</id>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <repositories>
         <repository>
           <snapshots>
             <enabled>false</enabled>
@@ -47,6 +62,12 @@
           <url>http://172.42.42.104:8081/artifactory/libs-snapshot</url>
         </pluginRepository>
       </pluginRepositories>
+      <id>artifactory</id>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>artifactory</activeProfile>
+  </activeProfiles>
 	<!-- <distributionManagement>
 		<repository>
 			<id>central</id>
