@@ -2,7 +2,10 @@ def label = "worker-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [ 
   containerTemplate(name: 'maven', image: 'maven:3.5-jdk-8', command: 'cat', ttyEnabled: true) 
-],
+  ],
+  volumes: [
+      configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
+  ]
 ) {
   node(label) {
     
