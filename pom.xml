@@ -16,7 +16,7 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
 	  
-	  <servers>
+   <!-- <servers>
     <server>
       <username>admin</username>
       <password>AP9YMHJpDaRrnUzzyY7e452G742</password>
@@ -27,7 +27,7 @@
       <password>AP9YMHJpDaRrnUzzyY7e452G742</password>
       <id>snapshots</id>
     </server>
-  </servers>
+  </servers> -->
   <profiles>
     <profile>
       <repositories>
