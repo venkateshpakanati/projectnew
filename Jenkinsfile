@@ -5,7 +5,7 @@ podTemplate(label: label, containers: [
   envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]) 
   ],
   volumes: [
-      configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
+      configMapVolume(configMapName: 'settings-xml', mountPath: '/root/jenkins/.m2'),
   ]
 ) {
   node(label) {
