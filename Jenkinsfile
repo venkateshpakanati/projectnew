@@ -39,7 +39,7 @@ podTemplate(label: label, containers: [
             ls -lat
             gradle clean build jar -g gradle-user-home
             ls -lrt
-            cd build/lib
+            ls -lrt build/lib
             """
        }
     }   
