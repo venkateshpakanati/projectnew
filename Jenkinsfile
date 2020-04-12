@@ -1,7 +1,8 @@
 def label = "worker-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [ 
-  containerTemplate(name: 'maven', image: 'maven:3.5-jdk-8', command: 'cat', ttyEnabled: true) 
+  containerTemplate(name: 'maven', image: 'maven:3.5-jdk-8', command: 'cat', ttyEnabled: true
+  envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]) 
   ],
   volumes: [
       configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
@@ -24,7 +25,7 @@ podTemplate(label: label, containers: [
        unstash "code-stash"
        sh "cat /home/jenkins/.m2/settings.xml"
        sh "mvn --version"
-       sh "curl -k https://repo.maven.apache.org/maven2" 
+      // sh "curl -k https://repo.maven.apache.org/maven2" 
        sh "mvn clean install -X"
       }
     }
