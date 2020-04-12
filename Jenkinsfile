@@ -24,7 +24,8 @@ podTemplate(label: label, containers: [
        unstash "code-stash"
        sh "cat /home/jenkins/.m2/settings.xml"
        sh "mvn --version"
-       sh "mvn clean install"
+       sh "curl -k https://repo.maven.apache.org/maven2" 
+       sh "mvn clean install -X"
       }
     }
    
