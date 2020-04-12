@@ -5,7 +5,7 @@ podTemplate(label: label, containers: [
   envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]) 
   ],
   volumes: [
-      configMapVolume(configMapName: 'settings-xml', mountPath: '/root/jenkins/.m2'),
+      configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
   ]
 ) {
   node(label) {
@@ -23,10 +23,10 @@ podTemplate(label: label, containers: [
     stage('Run maven') {
       container('maven') {
        unstash "code-stash"
-       sh "cat /root/jenkins/.m2/settings.xml"
+       sh "cat /home/jenkins/.m2/settings.xml"
        sh "mvn --version"
       // sh "curl -k https://repo.maven.apache.org/maven2" 
-       sh "mvn clean install -X"
+       sh "mvn -B clean install -X"
       }
     }
    
