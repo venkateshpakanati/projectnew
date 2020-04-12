@@ -26,7 +26,7 @@ podTemplate(label: label, containers: [
        container('gradle') {
           sh """
             pwd
-            gradle test
+            gradle build
             """
        }
     }   
