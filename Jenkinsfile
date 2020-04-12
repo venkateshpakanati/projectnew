@@ -2,10 +2,12 @@ def label = "worker-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [ 
   containerTemplate(name: 'maven', image: 'maven:3.6.0-jdk-8-alpine', command: 'cat', ttyEnabled: true,
-  envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]) 
+  envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]),
+  containerTemplate(name: 'gradle', image: 'gradle:4.5.1-jdk9', command: 'cat', ttyEnabled: true)
   ],
   volumes: [
       configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
+      hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle')
   ]
 ) {
   node(label) {
@@ -19,6 +21,15 @@ podTemplate(label: label, containers: [
         sh "ls -lat"
         stash name: "code-stash", includes: "**/*"
     }
+    
+    stage('Checkout Code') {
+       container('gradle') {
+          sh """
+            pwd
+            gradle test
+            """
+       }
+    }   
 
     stage('Run maven') {
       container('maven') {
