@@ -25,7 +25,7 @@ podTemplate(label: label, containers: [
         def gitBranch = myRepo.GIT_BRANCH
         def shortGitCommit = "${gitCommit[0..10]}"
         def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
-        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit} ''\n''
+        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit} \n
         ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
       
         sh "ls -lat"
