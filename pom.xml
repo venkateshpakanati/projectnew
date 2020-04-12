@@ -31,7 +31,7 @@
           <url>http://172.42.42.104:8081/artifactory/libs-snapshot</url>
         </repository>
       </repositories>
-	   <!-- <pluginRepositories>
+	   <pluginRepositories>
         <pluginRepository>
           <snapshots>
             <enabled>false</enabled>
@@ -46,7 +46,7 @@
           <name>libs-snapshot</name>
           <url>http://172.42.42.104:8081/artifactory/libs-snapshot</url>
         </pluginRepository>
-      </pluginRepositories> -->
+      </pluginRepositories>
 
 
 	  
