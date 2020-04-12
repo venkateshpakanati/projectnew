@@ -18,10 +18,14 @@ podTemplate(label: label, containers: [
         // url: 'http://13.234.176.102/venkateshpakanati/mymicroservices.git'
         def myRepo = checkout scm
         def gitCommit = myRepo.GIT_COMMIT
+        def gitLocalBranch = myRepo.GIT_LOCAL_BRANCH 
+        def gitPrevCommit = myRepo.GIT_PREVIOUS_COMMIT
+        def gitPrevSuccessCommit = myRepo.GIT_PREVIOUS_SUCCESSFUL_COMMIT
         def gitBranch = myRepo.GIT_BRANCH
         def shortGitCommit = "${gitCommit[0..10]}"
         def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
-        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}"
+        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}
+        ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
       
         sh "ls -lat"
         stash name: "code-stash", includes: "**/*"
