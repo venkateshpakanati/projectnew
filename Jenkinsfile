@@ -16,7 +16,12 @@ podTemplate(label: label, containers: [
         // git branch: 'master',
         // credentialsId: '35205444-4645-4167-b50e-c65137059f09',
         // url: 'http://13.234.176.102/venkateshpakanati/mymicroservices.git'
-        checkout scm
+        def myRepo = checkout scm
+        def gitCommit = myRepo.GIT_COMMIT
+        def gitBranch = myRepo.GIT_BRANCH
+        def shortGitCommit = "${gitCommit[0..10]}"
+        def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+        println "${gitCommit}   ${gitBranch}"
       
         sh "ls -lat"
         stash name: "code-stash", includes: "**/*"
