@@ -27,8 +27,9 @@ podTemplate(label: label, containers: [
           unstash "code-stash"
           sh """
             pwd
+            ls -lat
             gradle build -g gradle-user-home
-            sh "ls -lat"
+            ls -lat
             """
        }
     }   
