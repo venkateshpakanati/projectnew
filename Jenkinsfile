@@ -24,9 +24,11 @@ podTemplate(label: label, containers: [
     
     stage('Checkout Code') {
        container('gradle') {
+          unstash "code-stash"
           sh """
             pwd
             gradle build -g gradle-user-home
+            sh "ls -lat"
             """
        }
     }   
@@ -37,7 +39,7 @@ podTemplate(label: label, containers: [
        sh "cat /home/jenkins/.m2/settings.xml"
        sh "mvn --version"
       // sh "curl -k https://repo.maven.apache.org/maven2" 
-       sh "mvn -B clean install -X"
+      // sh "mvn -B clean install -X"
       }
     }
    
