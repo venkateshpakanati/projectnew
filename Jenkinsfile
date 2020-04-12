@@ -22,6 +22,7 @@ podTemplate(label: label, containers: [
     stage('Run maven') {
       container('maven') {
        unstash "code-stash"
+       sh "cat /home/jenkins/.m2/settings.xml"
        sh "mvn --version"
        sh "mvn clean compile"
       }
