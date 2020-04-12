@@ -13,6 +13,7 @@ podTemplate(label: label, containers: [
   node(label) {
     
     stage('Checkout Code') {
+       milestone ()
         // git branch: 'master',
         // credentialsId: '35205444-4645-4167-b50e-c65137059f09',
         // url: 'http://13.234.176.102/venkateshpakanati/mymicroservices.git'
@@ -24,7 +25,7 @@ podTemplate(label: label, containers: [
         def gitBranch = myRepo.GIT_BRANCH
         def shortGitCommit = "${gitCommit[0..10]}"
         def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
-        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}
+        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit} ''\n''
         ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
       
         sh "ls -lat"
@@ -32,6 +33,7 @@ podTemplate(label: label, containers: [
     }
     
     stage('Build Code') {
+       milestone ()
        container('gradle') {
           unstash "code-stash"
           sh """
@@ -45,6 +47,7 @@ podTemplate(label: label, containers: [
     }   
 
     stage('Run maven') {
+      milestone ()
       container('maven') {
        unstash "code-stash"
        sh "cat /home/jenkins/.m2/settings.xml"
