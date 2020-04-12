@@ -22,7 +22,7 @@ podTemplate(label: label, containers: [
         stash name: "code-stash", includes: "**/*"
     }
     
-    stage('Checkout Code') {
+    stage('Build Code') {
        container('gradle') {
           unstash "code-stash"
           sh """
