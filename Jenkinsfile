@@ -38,7 +38,7 @@ podTemplate(label: label, containers: [
           sh """
             pwd
             ls -lat
-            gradle clean build jar -g gradle-user-home
+            gradle build jar -g gradle-user-home --debug
             ls -lrt
             ls -lrt build
             """
