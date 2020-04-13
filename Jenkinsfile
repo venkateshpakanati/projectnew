@@ -58,6 +58,10 @@ podTemplate(label: label, containers: [
         //    docker images
         //  '''
           app = docker.build("cache-demo")
+          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+          }
        }
      
     }
