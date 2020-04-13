@@ -49,9 +49,8 @@ podTemplate(label: label, containers: [
       milestone ()
       container('maven') {
        unstash "code-stash"
-       sh "cat /home/jenkins/.m2/settings.xml"
-       sh "mvn --version"
-      // sh "curl -k https://repo.maven.apache.org/maven2" 
+      // sh "cat /home/jenkins/.m2/settings.xml"
+      // sh "mvn --version"
        sh "mvn clean deploy -s /home/jenkins/.m2/settings.xml"
      //  sh "mvn -B clean install -X"
       }
