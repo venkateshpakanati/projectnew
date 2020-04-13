@@ -51,12 +51,13 @@ podTemplate(label: label, containers: [
       
        container('docker') {
      //    unstash "jar-stash"
-         sh '''
-           ls -lrt
-           docker version
-           docker build . -t cache-demo
-           docker images
-         '''
+        //  sh '''
+        //    ls -lrt
+        //    docker version
+        //    docker build . -t cache-demo
+        //    docker images
+        //  '''
+          app = docker.build("cache-demo")
        }
      
     }
