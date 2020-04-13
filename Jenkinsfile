@@ -37,18 +37,21 @@ podTemplate(label: label, containers: [
        unstash "code-stash"
       // sh "cat /home/jenkins/.m2/settings.xml"
       // sh "mvn --version"
-       sh "mvn clean package -s /home/jenkins/.m2/settings.xml"
+       sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
      //  sh "mvn -B clean install -X"
        sh "ls -lrt"
        sh "cd target && ls -lrt"
-       stash name: "jar-stash", includes: "target/*"
+      // stash name: "jar-stash", includes: "**/*"
       }
     }
 
     stage('Build docker image and publish') {
        milestone ()
-       unstash "jar-stash"
-       sh "ls -lrt"
+    //   unstash "jar-stash"
+       sh '''
+          ls -lrt
+          docker version
+       '''
     }
    
   }
