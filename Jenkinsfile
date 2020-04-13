@@ -31,21 +31,7 @@ podTemplate(label: label, containers: [
         stash name: "code-stash", includes: "**/*"
     }
     
-    // stage('Build Code') {
-    //    milestone ()
-    //    container('gradle') {
-    //       unstash "code-stash"
-    //       sh """
-    //         pwd
-    //         ls -lat
-    //         gradle build -g gradle-user-home --debug
-    //         ls -lrt
-    //         ls -lrt build
-    //         """
-    //    }
-    // }   
-
-    stage('Run maven') {
+    stage('Build maven project') {
       milestone ()
       container('maven') {
        unstash "code-stash"
@@ -55,7 +41,14 @@ podTemplate(label: label, containers: [
      //  sh "mvn -B clean install -X"
        sh "ls -lrt"
        sh "cd target && ls -lrt"
+       stash name: "jar-stash", includes: "target/*"
       }
+    }
+
+    stage('Build docker image and publish') {
+       milestone ()
+       unstash "jar-stash"
+       sh "ls -lrt"
     }
    
   }
