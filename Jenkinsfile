@@ -57,10 +57,16 @@ podTemplate(label: label, containers: [
         //    docker build . -t cache-demo
         //    docker images
         //  '''
-          app = docker.build("cache-demo")
+          // app = docker.build("cache-demo")
+          // docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+          //   app.push("${env.BUILD_NUMBER}")
+          //   app.push("latest")
+          // }
+
           docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
+            def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
+           /* Push the container to the custom Registry */
+            customImage.push()
           }
        }
      
