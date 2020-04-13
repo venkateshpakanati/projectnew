@@ -42,7 +42,7 @@ podTemplate(label: label, containers: [
      //  sh "mvn -B clean install -X"
        sh "ls -lrt"
        sh "cd target && ls -lrt"
-       stash name: "jar-stash", includes: "target/CacheProject-1.0.0.jar"
+   //    stash name: "jar-stash", includes: "target/CacheProject-1.0.0.jar"
       }
     }
 
@@ -50,7 +50,7 @@ podTemplate(label: label, containers: [
        milestone ()
       
        container('docker') {
-         unstash "jar-stash"
+     //    unstash "jar-stash"
          sh '''
            ls -lrt
            docker version
