@@ -42,21 +42,22 @@ podTemplate(label: label, containers: [
      //  sh "mvn -B clean install -X"
        sh "ls -lrt"
        sh "cd target && ls -lrt"
-      // stash name: "jar-stash", includes: "**/*"
+       stash name: "jar-stash", includes: "**/*"
       }
     }
 
     stage('Build docker image and publish') {
        milestone ()
-    //   unstash "jar-stash"
-       sh '''
-          ls -lrt
-          
-       '''
        container('docker') {
-         sh "docker version"
+         unstash "jar-stash"
+         sh '''
+           ls -lrt
+           docker version
+           docker build . -t cache-demo
+           docker images
+         '''
        }
-      // app = docker.build("CacheProject")
+     
     }
    
   }
