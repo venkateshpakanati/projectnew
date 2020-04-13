@@ -11,7 +11,7 @@ podTemplate(label: label, containers: [
   ]
 ) {
   node(label) {
-    
+    def app
     stage('Checkout Code') {
        milestone ()
         // git branch: 'master',
@@ -50,8 +50,9 @@ podTemplate(label: label, containers: [
     //   unstash "jar-stash"
        sh '''
           ls -lrt
-          docker version
+          
        '''
+       app = docker.build("CacheProject")
     }
    
   }
