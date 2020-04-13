@@ -48,8 +48,9 @@ podTemplate(label: label, containers: [
 
     stage('Build docker image and publish') {
        milestone ()
+       unstash "jar-stash"
        container('docker') {
-         unstash "jar-stash"
+         
          sh '''
            ls -lrt
            docker version
