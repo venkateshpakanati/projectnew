@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-demo-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cache-demo-deployment
+  template:
+    metadata:
+      labels:
+        app: cache-demo-deployment
+    spec:
+      containers:
+      - name: cache-demo-application
+        image: venkateshpakanati/cache-demo
+        ports:
+          - containerPort: 8080
