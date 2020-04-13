@@ -51,8 +51,10 @@ podTemplate(label: label, containers: [
        unstash "code-stash"
       // sh "cat /home/jenkins/.m2/settings.xml"
       // sh "mvn --version"
-       sh "mvn clean compile -s /home/jenkins/.m2/settings.xml"
+       sh "mvn clean package -s /home/jenkins/.m2/settings.xml"
      //  sh "mvn -B clean install -X"
+       sh "ls -lrt"
+       sh "cd target && ls -lrt"
       }
     }
    
