@@ -92,7 +92,7 @@ podTemplate(label: label, containers: [
       container('helm') {
         sh "ls -lrt"
        // sh "helm list"
-        sh "helm install cacheproject projectchart"
+        sh "helm upgrade cacheproject projectchart"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
         // --clusterrole=cluster-admin \
         // --group=system:serviceaccounts
