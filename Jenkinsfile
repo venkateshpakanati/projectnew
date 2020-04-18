@@ -3,11 +3,13 @@ def label = "worker-${UUID.randomUUID().toString()}"
 podTemplate(label: label, containers: [ 
   containerTemplate(name: 'maven', image: 'maven:3.6.0-jdk-8-alpine', command: 'cat', ttyEnabled: true,
   envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]),
-  containerTemplate(name: 'docker', image: 'trion/jenkins-docker-client')
+  containerTemplate(name: 'docker', image: 'trion/jenkins-docker-client'),
+//  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
+//  containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
+
   ],
   volumes: [
       configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
-    //  hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle')
       hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
   ]
 ) {
@@ -76,7 +78,7 @@ podTemplate(label: label, containers: [
       milestone()
       sh "ls -lrt"
       script {
-          kubernetesDeploy(configs: "kubernetes/deployment.yaml", kubeconfigId: "kube-credentials")
+          kubernetesDeploy(configs: "kubernetes/deployment.yaml", kubeconfigId: "kubeconfig")
       }
     }
    
