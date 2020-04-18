@@ -5,7 +5,7 @@ podTemplate(label: label, containers: [
   envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]),
   containerTemplate(name: 'docker', image: 'trion/jenkins-docker-client'),
 //  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
-//  containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
+  containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
 
   ],
   volumes: [
