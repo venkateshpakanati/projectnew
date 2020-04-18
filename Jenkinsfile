@@ -72,7 +72,7 @@ podTemplate(label: label, containers: [
      
     }
 
-    stage() {
+    stage("Deploy") {
       milestone()
       sh "ls -lrt"
       script {
