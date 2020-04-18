@@ -74,11 +74,25 @@ podTemplate(label: label, containers: [
      
     }
 
-    stage("Deploy") {
+    // stage("Deploy") {
+    //   milestone()
+    //   sh "ls -lrt"
+    //   // script {
+    //   //     kubernetesDeploy(configs: "deployment.yaml", kubeconfigId: "kubeconfig")
+    //   // }
+    // }
+
+    // stage('Run kubectl') {
+    //   container('kubectl') {
+    //     sh "kubectl get pods"
+    //   }
+    // }
+    stage('Run helm') {
       milestone()
-      sh "ls -lrt"
-      script {
-          kubernetesDeploy(configs: "deployment.yaml", kubeconfigId: "kubeconfig")
+      container('helm') {
+        sh "ls -lrt"
+       // sh "helm list"
+        sh "helm install --dry-run --debug ./projectchart"
       }
     }
    
