@@ -71,6 +71,14 @@ podTemplate(label: label, containers: [
        }
      
     }
+
+    stage() {
+      milestone()
+      sh "ls -lrt"
+      script {
+          kubernetesDeploy(configs: "kubernetes/deployment.yaml", kubeconfigId: "kube-credentials")
+      }
+    }
    
   }
 }
