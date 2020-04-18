@@ -78,7 +78,7 @@ podTemplate(label: label, containers: [
       milestone()
       sh "ls -lrt"
       script {
-          kubernetesDeploy(configs: "kubernetes/deployment.yaml", kubeconfigId: "kubeconfig")
+          kubernetesDeploy(configs: "deployment.yaml", kubeconfigId: "kubeconfig")
       }
     }
    
