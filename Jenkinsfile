@@ -50,9 +50,19 @@ podTemplate(label: label, containers: [
       }
     }
 
+     stage('Build and install helm chart') {
+      milestone()
+      container('helm') {
+        sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
+        sh '''
+           helm package projectchart && ls -lrt
+           curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T projectchart "http://test:8082/artifactory/helm-local/projectchart"
+        '''
+      }
+    } 
+
     stage('Build docker image and publish') {
        milestone ()
-      
        container('docker') {
      //    unstash "jar-stash"
         //  sh '''
@@ -89,13 +99,15 @@ podTemplate(label: label, containers: [
     //     sh "kubectl get pods"
     //   }
     // }
+   
     stage('Run helm') {
       milestone()
       container('helm') {
         sh "ls -lrt"
        // sh "helm list"
-       sh "helm repo update --debug"
-       // sh "helm upgrade cacheproject projectchart"
+      // sh "ls -lrt /home/groot/helm"
+       sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
+       sh "helm upgrade cacheproject projectchart"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
         // --clusterrole=cluster-admin \
         // --group=system:serviceaccounts
