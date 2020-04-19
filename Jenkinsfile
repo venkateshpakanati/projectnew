@@ -56,15 +56,16 @@ podTemplate(label: label, containers: [
         sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
         sh '''
            helm package projectchart && ls -lrt
-           curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T projectchart "http://test:8082/artifactory/helm-local/projectchart"
-        '''
+        '''   
+         //  curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T projectchart "http://test:8082/artifactory/helm-local/projectchart"
+       
       }
     } 
 
     stage('Build docker image and publish') {
        milestone ()
        container('docker') {
-     //    unstash "jar-stash"
+        //    unstash "jar-stash"
         //  sh '''
         //    ls -lrt
         //    docker version
@@ -76,7 +77,7 @@ podTemplate(label: label, containers: [
           //   app.push("${env.BUILD_NUMBER}")
           //   app.push("latest")
           // }
-//curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T <PATH_TO_FILE> "http://test:8082/artifactory/helm-local/<TARGET_FILE_PATH>"
+          //curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T <PATH_TO_FILE> "http://test:8082/artifactory/helm-local/<TARGET_FILE_PATH>"
           docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
             def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
            /* Push the container to the custom Registry */
