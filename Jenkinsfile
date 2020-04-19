@@ -108,7 +108,7 @@ podTemplate(label: label, containers: [
         //sh "helm list"
       // sh "ls -lrt /home/groot/helm"
        sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
-       sh "yq w -i cacheproject/Chart.yaml version ${env.BUILD_ID}"
+      // sh "yq w -i cacheproject/Chart.yaml version ${env.BUILD_ID}"
        sh "helm upgrade --install --force cacheproject projectchart"
        sh "helm history cacheproject"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
