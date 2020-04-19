@@ -105,9 +105,10 @@ podTemplate(label: label, containers: [
       milestone()
       container('helm') {
         sh "ls -lrt"
-       // sh "helm list"
+        //sh "helm list"
       // sh "ls -lrt /home/groot/helm"
        sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
+       sh "yq w -i cacheproject/Chart.yaml version ${env.BUILD_ID}"
        sh "helm upgrade cacheproject projectchart"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
         // --clusterrole=cluster-admin \
