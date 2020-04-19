@@ -10,7 +10,9 @@ podTemplate(label: label, containers: [
   ],
   volumes: [
       configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
-      hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+      hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+      secretVolume(secretName: 'helm-repository', mountPath: '/home/groot/helm/repository'),
+      emptyDirVolume(mountPath: '/home/groot/helm/repository/cache', memory: false)
   ]
 ) {
   node(label) {
@@ -64,7 +66,7 @@ podTemplate(label: label, containers: [
           //   app.push("${env.BUILD_NUMBER}")
           //   app.push("latest")
           // }
-
+//curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T <PATH_TO_FILE> "http://test:8082/artifactory/helm-local/<TARGET_FILE_PATH>"
           docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
             def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
            /* Push the container to the custom Registry */
@@ -92,7 +94,8 @@ podTemplate(label: label, containers: [
       container('helm') {
         sh "ls -lrt"
        // sh "helm list"
-        sh "helm upgrade cacheproject projectchart"
+       sh "helm repo update --debug"
+       // sh "helm upgrade cacheproject projectchart"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
         // --clusterrole=cluster-admin \
         // --group=system:serviceaccounts
