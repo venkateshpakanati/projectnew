@@ -17,8 +17,16 @@ podTemplate(label: label, containers: [
 ) {
   node(label) {
     def app
+    def props = null
+    boolean isBuildApp = false
+    boolean isPublishArtifacts = false
+    boolean isDeploy = false
     stage('Checkout Code') {
        milestone ()
+       sh """
+            git config --global http.proxy ''
+            git config --global https.proxy ''
+        """
         // git branch: 'master',
         // credentialsId: '35205444-4645-4167-b50e-c65137059f09',
         // url: 'http://13.234.176.102/venkateshpakanati/mymicroservices.git'
@@ -36,86 +44,55 @@ podTemplate(label: label, containers: [
         stash name: "code-stash", includes: "**/*"
     }
     
+    stage('load properties') {
+      milestone()
+      if (env.BRANCH_NAME == 'develop') {
+        props = readProperties file:'jenkins-develop.properties'
+      } else {
+         props = readProperties file:'jenkins-default.properties'
+      }  
+     
+      isBuildApp = props.build.toBoolean()
+      isPublishArtifacts = props.publishartifacts.toBoolean()
+      isDeploy = props.deploy.toBoolean()
+
+    }
+
+  if(isBuildApp) {
     stage('Build maven project') {
       milestone ()
       container('maven') {
        unstash "code-stash"
-      // sh "cat /home/jenkins/.m2/settings.xml"
-      // sh "mvn --version"
        sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
-     //  sh "mvn -B clean install -X"
-       sh "ls -lrt"
-       sh "cd target && ls -lrt"
-   //    stash name: "jar-stash", includes: "target/CacheProject-1.0.0.jar"
       }
     }
+  }
 
-     stage('Build and install helm chart') {
-      milestone()
-      container('helm') {
-        sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
-        sh '''
-           helm package projectchart && ls -lrt
-        '''   
-         //  curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T projectchart "http://test:8082/artifactory/helm-local/projectchart"
-       
-      }
-    } 
-
+  if(isPublishArtifacts) {
     stage('Build docker image and publish') {
        milestone ()
        container('docker') {
-        //    unstash "jar-stash"
-        //  sh '''
-        //    ls -lrt
-        //    docker version
-        //    docker build . -t cache-demo
-        //    docker images
-        //  '''
-          // app = docker.build("cache-demo")
-          // docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-          //   app.push("${env.BUILD_NUMBER}")
-          //   app.push("latest")
-          // }
-          //curl -uadmin:AP9YMHJpDaRrnUzzyY7e452G742 -T <PATH_TO_FILE> "http://test:8082/artifactory/helm-local/<TARGET_FILE_PATH>"
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-            def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
-           /* Push the container to the custom Registry */
-            customImage.push()
-          }
+         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+          def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
+           customImage.push()
+         }
        }
-     
     }
+  }  
 
-    // stage("Deploy") {
-    //   milestone()
-    //   sh "ls -lrt"
-    //   // script {
-    //   //     kubernetesDeploy(configs: "deployment.yaml", kubeconfigId: "kubeconfig")
-    //   // }
-    // }
-
-    // stage('Run kubectl') {
-    //   container('kubectl') {
-    //     sh "kubectl get pods"
-    //   }
-    // }
-   
+  if(isDeploy) {
     stage('Run helm') {
       milestone()
       container('helm') {
         sh "ls -lrt"
-        //sh "helm list"
-      // sh "ls -lrt /home/groot/helm"
-       sh "helm repo update --debug --repository-config /home/groot/helm/repository/repositories.yaml"
-      // sh "yq w -i cacheproject/Chart.yaml version ${env.BUILD_ID}"
-       sh "helm upgrade --install --force cacheproject projectchart"
-       sh "helm history cacheproject"
+       // sh "helm list"
+       sh "helm repo update --debug"
+       // sh "helm upgrade cacheproject projectchart"
         // kubectl create clusterrolebinding serviceaccounts-cluster-admin \
         // --clusterrole=cluster-admin \
         // --group=system:serviceaccounts
       }
     }
-   
-  }
+  } 
+ }
 }
