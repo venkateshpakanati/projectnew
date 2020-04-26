@@ -1,16 +1,22 @@
 def label = "worker-${UUID.randomUUID().toString()}"
 
+properties([
+  parameters([
+    string(name: 'RELEASE', defaultValue: 'latest', description: 'Enter the desired release version to be deployed.', trim: true)
+  ])
+])
+
 podTemplate(label: label, containers: [ 
-  containerTemplate(name: 'maven', image: 'maven:3.6.0-jdk-8-alpine', command: 'cat', ttyEnabled: true,
-  envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]),
-  containerTemplate(name: 'docker', image: 'trion/jenkins-docker-client'),
+//   containerTemplate(name: 'maven', image: 'maven:3.6.0-jdk-8-alpine', command: 'cat', ttyEnabled: true,
+//   envVars: [envVar(key: 'MAVEN_CONFIG', value: '/home/jenkins/.m2')]),
+//  containerTemplate(name: 'docker', image: 'trion/jenkins-docker-client'),
 //  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
 
   ],
   volumes: [
-      configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
-      hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+   //   configMapVolume(configMapName: 'settings-xml', mountPath: '/home/jenkins/.m2'),
+    //  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
       secretVolume(secretName: 'helm-repository', mountPath: '/home/groot/helm/repository'),
       emptyDirVolume(mountPath: '/home/groot/helm/repository/cache', memory: false)
   ]
@@ -18,8 +24,6 @@ podTemplate(label: label, containers: [
   node(label) {
     def app
     def props = null
-    boolean isBuildApp = false
-    boolean isPublishArtifacts = false
     boolean isDeploy = false
     stage('Checkout Code') {
        milestone ()
@@ -41,47 +45,24 @@ podTemplate(label: label, containers: [
         println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}   ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
       
         sh "ls -lat"
-        stash name: "code-stash", includes: "**/*"
     }
     
     stage('load properties') {
       milestone()
-      if (env.BRANCH_NAME == 'develop') {
-         props = readProperties file:'jenkins-develop.properties'
-      } else if (env.BRANCH_NAME =~ /^(release|hotfix)/) {
-         props = readProperties file:'jenkins/jenkins-release.properties'
-      } else {
-         props = readProperties file:'jenkins-default.properties'
-      }  
+    //   if (env.BRANCH_NAME == 'develop') {
+    //      props = readProperties file:'jenkins-develop.properties'
+    //   } else if (env.BRANCH_NAME =~ /^(release|hotfix)/) {
+    //      props = readProperties file:'jenkins/jenkins-release.properties'
+    //   } else {
+    //      props = readProperties file:'jenkins-default.properties'
+    //   }  
      
-      isBuildApp = props.build.toBoolean()
-      isPublishArtifacts = props.publishartifacts.toBoolean()
-      isDeploy = props.deploy.toBoolean()
+   
+    //   isDeploy = props.deploy.toBoolean()
 
     }
 
-  if(isBuildApp) {
-    stage('Build maven project') {
-      milestone ()
-      container('maven') {
-       unstash "code-stash"
-       sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
-      }
-    }
-  }
-
-  if(isPublishArtifacts) {
-    stage('Build docker image and publish') {
-       milestone ()
-       container('docker') {
-         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-          def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
-           customImage.push()
-         }
-       }
-    }
-  }  
-
+ 
   if(isDeploy) {
     stage('Run helm') {
       milestone()
