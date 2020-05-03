@@ -10,6 +10,11 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "projectchart.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ add .Values.replicaCount }}
+      maxUnavailable: {{ sub .Values.replicaCount 1 }}
+    type: RollingUpdate    
   template:
     metadata:
       labels:
