@@ -24,7 +24,7 @@ public class InstituteController {
     InstitutionService instituteService;
  
     @GetMapping(path = "")
-    @ApiOperation(value = "Get All Institutions Test")
+    @ApiOperation(value = "Get All Institutions")
     public List<Institution> getAllInstitutions()  {        
         return instituteService.getAllInstitutions();
     }
