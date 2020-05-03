@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: venkateshpakanati/cache-demo
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""
