@@ -81,11 +81,10 @@ podTemplate(label: label, containers: [
              cat /home/groot/helm/repository/repositories.yaml
              helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
              helm repo update --debug
-             helm repo list --debug
-         
+             helm repo list --debug         
              yq w -i projectchart/Chart.yaml version ${env.BUILD_ID}
              yq w -i projectchart/Chart.yaml appVersion ${env.BUILD_ID}
-                      
+             yq w -i projectchart/values.yaml image.tag ${env.BUILD_ID}                                 
              chart_name="projectchart"
              version=$(helm inspect "$chart_name" | yq r - 'version')
              helm package projectchart
