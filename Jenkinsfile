@@ -61,6 +61,8 @@ try {
                   milestone ()
                   container('maven') {
                   // unstash "code-stash"
+                   echo "under maven >>>>>>>>>>>>>>>>>>>>>>>"
+                   sh 'ls -lrt && mvn -version'
                   sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
                   }
                 }
