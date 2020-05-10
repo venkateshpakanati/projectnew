@@ -9,7 +9,7 @@ images = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500
 
 try {
     timestamps {
-       slaveTemplate = new test(label, images, workingdir, this)
+       slaveTemplate = new PodTemplate(label, images, workingdir, this)
        slaveTemplate.BuilderTemplate {
            node(slaveTemplate.podlabel) {
                 def app
