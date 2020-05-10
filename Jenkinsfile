@@ -122,7 +122,7 @@ try {
         }
     }
   } catch(e) {
-       println $e
+       println ${e}
        throw e
   }   
 // podTemplate(label: label, containers: [ 
