@@ -6,7 +6,13 @@ def label = "worker-${UUID.randomUUID().toString()}"
 def workingdir = "/home/jenkins"
 
 images = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500m"]
+def dockerImage = [docker:"trion/jenkins-docker-client", dockerMemLmt:"6000Mi", dockerCpuLmt:"3000m"]
+def helmImg = [helm:"venkateshpakanati/helm_push:1.3"]
 
+
+images << dockerImage 
+images << helmImg
+ 
 try {
     timestamps {
        slaveTemplate = new PodTemplate(label, images, workingdir, this)
@@ -68,63 +74,63 @@ try {
                 }
               }
 
-              // if(isPublishArtifacts) {
-              //   stage('Build helm chart and publish helm chart') {
-              //     milestone()
-              //     container('helm') {
-              //         def chartPath = "projectchart"
-              //         def releasename ="projectchart";
-              //         def helmvirtualrepo = "local";
-              //         sh '''
-              //           cat /home/groot/helm/repository/repositories.yaml
-              //           helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
-              //           helm repo update --debug
-              //           helm repo list --debug
-              //         '''
-              //         sh "yq w -i projectchart/Chart.yaml version ${env.BUILD_ID}"
-              //         sh "yq w -i projectchart/Chart.yaml appVersion ${env.BUILD_ID}"
-              //         sh "yq w -i projectchart/values.yaml image.tag ${env.BUILD_ID}"
+              if(isPublishArtifacts) {
+                stage('Build helm chart and publish helm chart') {
+                  milestone()
+                  container('helm') {
+                      def chartPath = "projectchart"
+                      def releasename ="projectchart";
+                      def helmvirtualrepo = "local";
+                      sh '''
+                        cat /home/groot/helm/repository/repositories.yaml
+                        helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
+                        helm repo update --debug
+                        helm repo list --debug
+                      '''
+                      sh "yq w -i projectchart/Chart.yaml version ${env.BUILD_ID}"
+                      sh "yq w -i projectchart/Chart.yaml appVersion ${env.BUILD_ID}"
+                      sh "yq w -i projectchart/values.yaml image.tag ${env.BUILD_ID}"
                                   
-              //         sh '''                                
-              //           chart_name="projectchart"
-              //           version=$(helm inspect "$chart_name" | yq r - 'version')
-              //           helm package projectchart
-              //           ls -lrt
-              //           chart_filename="${chart_name}-${version}.tgz"
-              //           curl -u admin:AP9YMHJpDaRrnUzzyY7e452G742 -X PUT -vvv -T "${chart_filename}" "http://172.42.42.104:8081/artifactory/helm/${chart_filename}"
-              //         '''
-              //     }
-              //   }
+                      sh '''                                
+                        chart_name="projectchart"
+                        version=$(helm inspect "$chart_name" | yq r - 'version')
+                        helm package projectchart
+                        ls -lrt
+                        chart_filename="${chart_name}-${version}.tgz"
+                        curl -u admin:AP9YMHJpDaRrnUzzyY7e452G742 -X PUT -vvv -T "${chart_filename}" "http://172.42.42.104:8081/artifactory/helm/${chart_filename}"
+                      '''
+                  }
+                }
             
-              //   stage('Build docker image and publish image') {
-              //     milestone ()
-              //     container('docker') {
-              //       docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-              //         def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
-              //         customImage.push()
-              //       }
-              //     }
-              //   }
-              // }  
+                stage('Build docker image and publish image') {
+                  milestone ()
+                  container('docker') {
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                      def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
+                      customImage.push()
+                    }
+                  }
+                }
+              }  
 
-              // if(isDeploy) {
-              //   stage('Run helm') {
-              //     milestone()
-              //     container('helm') {
-              //       sh '''
-              //         helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
-              //         helm repo update --debug
-              //     '''	  
-              //       sh "helm upgrade projectchart http://172.42.42.104:8081/artifactory/helm/projectchart-${env.BUILD_ID}.tgz  --username admin --password AP9YMHJpDaRrnUzzyY7e452G742 --install --force --debug"
+              if(isDeploy) {
+                stage('Run helm') {
+                  milestone()
+                  container('helm') {
+                    sh '''
+                      helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
+                      helm repo update --debug
+                  '''	  
+                    sh "helm upgrade projectchart http://172.42.42.104:8081/artifactory/helm/projectchart-${env.BUILD_ID}.tgz  --username admin --password AP9YMHJpDaRrnUzzyY7e452G742 --install --force --debug"
                     
-              //     }
-              //   }
-              // }           
+                  }
+                }
+              }           
             }
         }
     }
   } catch(e) {
-       println ${e}
+      // println ${e}
        throw e
   }   
 // podTemplate(label: label, containers: [ 
