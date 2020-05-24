@@ -74,63 +74,63 @@ try {
            }
          }   
 
-        images = images - mavenImage
-        images << helmImg 
+      //   images = images - mavenImage
+      //   images << helmImg 
 
-         slaveTemplate = new PodTemplate(label, images, workingdir, this)
-         slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) { 
-              if(isPublishArtifacts) {
-                stage('Build helm chart and publish helm chart') {
-                  milestone()
-                  container('helm') {
-                      def chartPath = "projectchart"
-                      def releasename ="projectchart";
-                      def helmvirtualrepo = "local";
-                      helmutil = new helmUtility();
-                      helmutil.buildAndPublishChart(chartPath,releasename,helmvirtualrepo);
-                  }
-                }
-              }
-           }  
+      //    slaveTemplate = new PodTemplate(label, images, workingdir, this)
+      //    slaveTemplate.BuilderTemplate {
+      //      node(slaveTemplate.podlabel) { 
+      //         if(isPublishArtifacts) {
+      //           stage('Build helm chart and publish helm chart') {
+      //             milestone()
+      //             container('helm') {
+      //                 def chartPath = "projectchart"
+      //                 def releasename ="projectchart";
+      //                 def helmvirtualrepo = "local";
+      //                 helmutil = new helmUtility();
+      //                 helmutil.buildAndPublishChart(chartPath,releasename,helmvirtualrepo);
+      //             }
+      //           }
+      //         }
+      //      }  
 
-        images = images - helmImg
-        images << dockerImage 
+      //   images = images - helmImg
+      //   images << dockerImage 
        
-         slaveTemplate = new PodTemplate(label, images, workingdir, this)
-         slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {    
-                stage('Build docker image and publish image') {
-                  milestone ()
-                  container('docker') {
-                    unstash "code-stash"
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                      def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
-                      customImage.push()
-                    }
-                  }
-                }
-           }
-        }             
+      //    slaveTemplate = new PodTemplate(label, images, workingdir, this)
+      //    slaveTemplate.BuilderTemplate {
+      //      node(slaveTemplate.podlabel) {    
+      //           stage('Build docker image and publish image') {
+      //             milestone ()
+      //             container('docker') {
+      //               unstash "code-stash"
+      //               docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+      //                 def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
+      //                 customImage.push()
+      //               }
+      //             }
+      //           }
+      //      }
+      //   }             
 
-        images = images - dockerImage
-        images << helmImg
+      //   images = images - dockerImage
+      //   images << helmImg
 
-       slaveTemplate = new PodTemplate(label, images, workingdir, this)
-       slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {
-              if(isDeploy) {
-                stage('Run helm') {
-                  milestone()
-                  container('helm') {
-                    helmutil = new helmUtility();
-                    helmutil.deploy()
-                  }
-                }
-              }           
-            }
-        }
-      }
+      //  slaveTemplate = new PodTemplate(label, images, workingdir, this)
+      //  slaveTemplate.BuilderTemplate {
+      //      node(slaveTemplate.podlabel) {
+      //         if(isDeploy) {
+      //           stage('Run helm') {
+      //             milestone()
+      //             container('helm') {
+      //               helmutil = new helmUtility();
+      //               helmutil.deploy()
+      //             }
+      //           }
+      //         }           
+      //       }
+      //   }
+      // }
     } 
   } catch(e) {
       // println ${e}
