@@ -4,10 +4,14 @@ def label = "worker-${UUID.randomUUID().toString()}"
 
 //Jenkins workspace
 def workingdir = "/home/jenkins"
-def images = null
+def images = [:]
 def mavenImage = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500m"]
 def dockerImage = [docker:"trion/jenkins-docker-client", dockerMemLmt:"6000Mi", dockerCpuLmt:"3000m"]
 def helmImg = [helm:"venkateshpakanati/helm_push:1.3"]
+
+boolean isBuildApp = false
+boolean isPublishArtifacts = false
+boolean isDeploy = false
 
 images << mavenImage
  
@@ -18,9 +22,6 @@ try {
            node(slaveTemplate.podlabel) {
                 def app
                 def props = null
-                boolean isBuildApp = false
-                boolean isPublishArtifacts = false
-                boolean isDeploy = false
                 stage('Checkout Code') {
                   milestone ()
                   sh """
@@ -76,14 +77,16 @@ try {
 
         images = images - mavenImage
         images << helmImg 
+        images << dockerImage
 
+      if(isPublishArtifacts) {
          slaveTemplate = new PodTemplate(label, images, workingdir, this)
          slaveTemplate.BuilderTemplate {
            node(slaveTemplate.podlabel) { 
-              if(isPublishArtifacts) {
-                stage('Build helm chart and publish helm chart') {
+                  stage('Build helm chart and publish helm chart') {
                   milestone()
                   container('helm') {
+                      unstash "code-stash"
                       def chartPath = "projectchart"
                       def releasename ="projectchart";
                       def helmvirtualrepo = "local";
@@ -91,16 +94,8 @@ try {
                       helmutil.buildAndPublishChart(chartPath,releasename,helmvirtualrepo);
                   }
                 }
-              }
-           }  
-
-        images = images - helmImg
-        images << dockerImage 
-       
-         slaveTemplate = new PodTemplate(label, images, workingdir, this)
-         slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {    
-                stage('Build docker image and publish image') {
+                 
+              stage('Build docker image and publish image') {
                   milestone ()
                   container('docker') {
                     unstash "code-stash"
@@ -110,17 +105,17 @@ try {
                     }
                   }
                 }
-           }
-        }             
+              }
+           }       
+      }  
 
         images = images - dockerImage
         images << helmImg
-
+     if(isDeploy) {
        slaveTemplate = new PodTemplate(label, images, workingdir, this)
        slaveTemplate.BuilderTemplate {
            node(slaveTemplate.podlabel) {
-              if(isDeploy) {
-                stage('Run helm') {
+                  stage('Run helm') {
                   milestone()
                   container('helm') {
                     helmutil = new helmUtility();
@@ -130,7 +125,6 @@ try {
               }           
             }
         }
-      }
     } 
   } catch(e) {
       // println ${e}
