@@ -77,12 +77,13 @@ try {
 
         images = images - mavenImage
         images << helmImg 
+        images << dockerImage
 
+      if(isPublishArtifacts) {
          slaveTemplate = new PodTemplate(label, images, workingdir, this)
          slaveTemplate.BuilderTemplate {
            node(slaveTemplate.podlabel) { 
-              if(isPublishArtifacts) {
-                stage('Build helm chart and publish helm chart') {
+                  stage('Build helm chart and publish helm chart') {
                   milestone()
                   container('helm') {
                       def chartPath = "projectchart"
@@ -92,16 +93,8 @@ try {
                       helmutil.buildAndPublishChart(chartPath,releasename,helmvirtualrepo);
                   }
                 }
-              }
-           }  
-
-        images = images - helmImg
-        images << dockerImage 
-       
-         slaveTemplate = new PodTemplate(label, images, workingdir, this)
-         slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {    
-                stage('Build docker image and publish image') {
+                 
+              stage('Build docker image and publish image') {
                   milestone ()
                   container('docker') {
                     unstash "code-stash"
@@ -111,17 +104,17 @@ try {
                     }
                   }
                 }
-           }
-        }             
+              }
+           }       
+      }  
 
         images = images - dockerImage
         images << helmImg
-
+     if(isDeploy) {
        slaveTemplate = new PodTemplate(label, images, workingdir, this)
        slaveTemplate.BuilderTemplate {
            node(slaveTemplate.podlabel) {
-              if(isDeploy) {
-                stage('Run helm') {
+                  stage('Run helm') {
                   milestone()
                   container('helm') {
                     helmutil = new helmUtility();
