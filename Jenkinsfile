@@ -86,6 +86,7 @@ try {
                   stage('Build helm chart and publish helm chart') {
                   milestone()
                   container('helm') {
+                      unstash "code-stash"
                       def chartPath = "projectchart"
                       def releasename ="projectchart";
                       def helmvirtualrepo = "local";
