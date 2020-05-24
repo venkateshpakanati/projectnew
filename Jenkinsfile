@@ -9,6 +9,10 @@ def mavenImage = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuL
 def dockerImage = [docker:"trion/jenkins-docker-client", dockerMemLmt:"6000Mi", dockerCpuLmt:"3000m"]
 def helmImg = [helm:"venkateshpakanati/helm_push:1.3"]
 
+boolean isBuildApp = false
+boolean isPublishArtifacts = false
+boolean isDeploy = false
+
 images << mavenImage
  
 try {
@@ -18,9 +22,6 @@ try {
            node(slaveTemplate.podlabel) {
                 def app
                 def props = null
-                boolean isBuildApp = false
-                boolean isPublishArtifacts = false
-                boolean isDeploy = false
                 stage('Checkout Code') {
                   milestone ()
                   sh """
