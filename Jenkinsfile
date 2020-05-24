@@ -4,12 +4,12 @@ def label = "worker-${UUID.randomUUID().toString()}"
 
 //Jenkins workspace
 def workingdir = "/home/jenkins"
-def images = ""
+def images = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500m"]
 def mavenImage = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500m"]
 def dockerImage = [docker:"trion/jenkins-docker-client", dockerMemLmt:"6000Mi", dockerCpuLmt:"3000m"]
 def helmImg = [helm:"venkateshpakanati/helm_push:1.3"]
 
-images << mavenImage
+//images << mavenImage
  
 try {
     timestamps {
