@@ -124,7 +124,6 @@ try {
               }           
             }
         }
-      }
     } 
   } catch(e) {
       // println ${e}
