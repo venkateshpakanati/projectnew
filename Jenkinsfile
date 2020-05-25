@@ -13,6 +13,8 @@ boolean isBuildApp = false
 boolean isPublishArtifacts = false
 boolean isDeploy = false
 
+def versionParts = []
+
 images << mavenImage
  
 try {
@@ -66,6 +68,11 @@ try {
                   milestone ()
                   container('maven') {
                  //  unstash "code-stash"
+                   def mavenPom = readMavenPom file: 'pom.xml'
+                   def pomVersion = mavenPom.properties['global.version']
+                   versionParts = pomVersion.split('\\.')
+                   def queryVersion = "${versionParts[0]}.${versionParts[1]}".toString()
+                   println "${pomVersion}  , ${queryVersion}"
                    sh 'ls -lrt && mvn -version'
                    sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
                    stash name: "code-stash", includes: "**/*"
