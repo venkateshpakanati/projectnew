@@ -17,6 +17,7 @@
 	<description>Demo cache project</description>
 
 	<properties>
+	    <global.version>1.0.0</global.version>
 		<java.version>1.8</java.version>
 	</properties>
 
