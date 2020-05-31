@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: "{{ $.Chart.Name }}"
+spec:
+  runPolicy: Serial
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      pullSecret:
+        name: {{ .Values.nginx_test.image.pullSecret }}
+  output:
+    to:
+      kind: DockerImage
+      name: "{{ .Values.nginx_test.image.name }}:{{ .Values.nginx_test.image.version }}"
+    pushSecret:
+      name: {{ .Values.nginx_test.image.pushSecret }}
