@@ -5,6 +5,7 @@ def clustername = "kubernetes"
 def namespace = "tiller"
 
 def artifactoryApiUri = null
+def versionNumber = null
 
 podTemplate(cloud: clustername,
             namespace: namespace,
