@@ -116,7 +116,7 @@ podTemplate(cloud: clustername,
                                 }
                                  if(isPublishArtifactsforRelease) {
                                   stage("mvn repo cleanup") {
-                                    sh "mvn build-helper:remove-project-artifact"
+                                    sh "mvn build-helper:remove-project-artifact -s /home/jenkins/.m2/settings.xml"
                                   }  
                                 } 
                             }
