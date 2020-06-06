@@ -136,9 +136,9 @@ podTemplate(cloud: clustername,
                               helm repo update --debug
                               helm repo list --debug
                             '''
-                            sh "yq w -i projectchart/Chart.yaml version ${env.BUILD_ID}"
-                            sh "yq w -i projectchart/Chart.yaml appVersion ${env.BUILD_ID}"
-                            sh "yq w -i projectchart/values.yaml image.tag ${env.BUILD_ID}"
+                            sh "yq w -i projectchart/Chart.yaml version ${versionNumber}"
+                            sh "yq w -i projectchart/Chart.yaml appVersion ${versionNumber}"
+                            sh "yq w -i projectchart/values.yaml image.tag ${versionNumber}"
                                         
                             sh '''                                
                               chart_name="projectchart"
@@ -148,9 +148,9 @@ podTemplate(cloud: clustername,
                               chart_filename="${chart_name}-${version}.tgz"
                               curl -u admin:AP9YMHJpDaRrnUzzyY7e452G742 -X PUT -vvv -T "${chart_filename}" "http://172.42.42.104:8081/artifactory/helm/${chart_filename}"
                             '''
-                            sh "yq w -i projectbuildchart/Chart.yaml version ${env.BUILD_ID}"
-                            sh "yq w -i projectbuildchart/Chart.yaml appVersion ${env.BUILD_ID}"
-                            sh "yq w -i projectbuildchart/values.yaml nginx_test.image.version ${env.BUILD_ID}"
+                            sh "yq w -i projectbuildchart/Chart.yaml version ${versionNumber}"
+                            sh "yq w -i projectbuildchart/Chart.yaml appVersion ${versionNumber}"
+                            sh "yq w -i projectbuildchart/values.yaml nginx_test.image.version ${versionNumber}"
                             sh "helm upgrade projectbuildchart projectbuildchart --tiller-namespace tiller --namespace tiller --install --force --debug"
                           }
                       }        
@@ -173,7 +173,7 @@ podTemplate(cloud: clustername,
                               helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
                               helm repo update --debug
                             '''      
-                            sh "helm upgrade projectchart http://172.42.42.104:8081/artifactory/helm/projectchart-${env.BUILD_ID}.tgz  --username admin --password AP9YMHJpDaRrnUzzyY7e452G742 --tiller-namespace tiller --namespace tiller --version ${env.BUILD_ID} --install --force --debug"
+                            sh "helm upgrade projectchart http://172.42.42.104:8081/artifactory/helm/projectchart-${versionNumber}.tgz  --username admin --password AP9YMHJpDaRrnUzzyY7e452G742 --tiller-namespace tiller --namespace tiller --version ${versionNumber} --install --force --debug"
                       
                           }
                       }
