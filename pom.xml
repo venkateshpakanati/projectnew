@@ -79,4 +79,12 @@
 		</plugins>
 	</build>
 
+	<distributionManagement>
+		<repository>
+			<id>central</id>
+			<name>cacheproject</name>
+			<url>http://172.42.42.104:8082/artifactory/cacheproject</url>
+		</repository>
+    </distributionManagement>
+
 </project>
