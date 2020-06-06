@@ -4,6 +4,8 @@ def workingdir = "/home/jenkins"
 def clustername = "kubernetes"
 def namespace = "tiller"
 
+def artifactoryApiUri = null
+
 podTemplate(cloud: clustername,
             namespace: namespace,
             containers: [
@@ -53,22 +55,42 @@ podTemplate(cloud: clustername,
                         isBuildApp = props.build.toBoolean()
                         isPublishArtifacts = props.publishartifacts.toBoolean()
                         isDeploy = props.deploy.toBoolean()
-
+                        artifactoryApiUri = props.artifactoryApiUri
+                        isPublishArtifactsforRelease = props.isPublishArtifactsforRelease.toBoolean()
                     }
                     if(isBuildApp) {
-                      stage('Build a Maven project') {
-                        milestone ()
-                        container('maven') {
-                                  def mavenPom = readMavenPom file: 'pom.xml'
-                                  def pomVersion = mavenPom.properties['global.version']
-                                  versionParts = pomVersion.split('\\.')
-                                  def queryVersion = "${versionParts[0]}.${versionParts[1]}".toString()
-                                  println "${pomVersion}  , ${queryVersion}"
-                                  sh 'ls -lrt && mvn -version'
-                                  sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
+                        stage('Build a Maven project') {
+                          milestone ()
+                          container('maven') {
+                            if(isPublishArtifactsforRelease) {
+                                      def mavenPom = readMavenPom file: 'pom.xml'
+                                      def pomVersion = mavenPom.properties['global.version']
+                                      versionParts = pomVersion.split('\\.')
+                                      def queryVersion = "${versionParts[0]}.${versionParts[1]}".toString()
+                                      println "${pomVersion}  , ${queryVersion}"
+                                      withCredentials([usernameColonPassword(credentialsId: 'cacheproject', variable: 'artifactoryUser')]) {
+                                        sh  """
+                                              touch aql.json
+                                              echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"cacheproject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
+                                              curl -X POST -o response.json --user "${artifactoryUser}" "${artifactoryApiUri}" -T aql.json
+                                            """
+                                      }
+                                      def responseFile = readFile 'response.json'
+                                      def responseJson = readJSON text: "$responseFile"
+                                      echo "Version Query Response JSON = $responseJson"
+                                  
+                                      sh 'ls -lrt && mvn -version'
+                                      sh "mvn -V -B -U -T 8 clean deploy -s /home/jenkins/.m2/settings.xml"
+                                }
+                                else {  //build for develop in local jenkins workspace
+                                  stage("build for develop") {
+                                    milestone()
+                                    sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
+                                  }  
+                                }
                             }
                         }
-                    }  
+                    }   
                     if(isPublishArtifacts) {
                       stage('Build helm chart and publish helm chart') {
                           milestone()
