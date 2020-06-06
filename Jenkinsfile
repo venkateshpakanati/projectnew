@@ -114,14 +114,15 @@ podTemplate(cloud: clustername,
                                     sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
                                   }  
                                 }
+                                 if(isPublishArtifactsforRelease) {
+                                  stage("mvn repo cleanup") {
+                                    sh "mvn build-helper:remove-project-artifact"
+                                  }  
+                                } 
                             }
                         }
                     }
-                    if(isPublishArtifactsforRelease) {
-                      stage("mvn repo cleanup") {
-                        sh "mvn build-helper:remove-project-artifact"
-                      }  
-                    } 
+                   
                     if(isPublishArtifacts) {
                       stage('Build helm chart and publish helm chart') {
                           milestone()
