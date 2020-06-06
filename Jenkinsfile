@@ -56,7 +56,7 @@ podTemplate(cloud: clustername,
                         isPublishArtifacts = props.publishartifacts.toBoolean()
                         isDeploy = props.deploy.toBoolean()
                         artifactoryApiUri = props.artifactoryApiUri
-
+                        isPublishArtifactsforRelease = props.isPublishArtifactsforRelease
                     }
                     if(isBuildApp) {
                         stage('Build a Maven project') {
