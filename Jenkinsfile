@@ -1,139 +1,128 @@
-@Library('jenkins-shared') _
 
-def label = "worker-${UUID.randomUUID().toString()}"
-
-//Jenkins workspace
 def workingdir = "/home/jenkins"
-def images = [:]
-def mavenImage = [maven:"maven:3.6.0-jdk-8-alpine", mavenMemLmt:"2Gi", mavenCpuLmt:"1500m"]
-def dockerImage = [docker:"trion/jenkins-docker-client", dockerMemLmt:"6000Mi", dockerCpuLmt:"3000m"]
-def helmImg = [helm:"venkateshpakanati/helm_push:1.3"]
 
-boolean isBuildApp = false
-boolean isPublishArtifacts = false
-boolean isDeploy = false
+def clustername = "kubernetes"
+def namespace = "tiller"
 
-def versionParts = []
-
-images << mavenImage
- 
-try {
-    timestamps {
-       slaveTemplate = new PodTemplate(label, images, workingdir, this)
-       slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {
-                def app
-                def props = null
-                stage('Checkout Code') {
-                  milestone ()
-                  sh """
-                        git config --global http.proxy ''
-                        git config --global https.proxy ''
-                    """
-                    // git branch: 'master',
-                    // credentialsId: '35205444-4645-4167-b50e-c65137059f09',
-                    // url: 'http://13.234.176.102/venkateshpakanati/mymicroservices.git'
-                    def myRepo = checkout scm
-                    def gitCommit = myRepo.GIT_COMMIT
-                    def gitLocalBranch = myRepo.GIT_LOCAL_BRANCH 
-                    def gitPrevCommit = myRepo.GIT_PREVIOUS_COMMIT
-                    def gitPrevSuccessCommit = myRepo.GIT_PREVIOUS_SUCCESSFUL_COMMIT
-                    def gitBranch = myRepo.GIT_BRANCH
-                    def shortGitCommit = "${gitCommit[0..10]}"
-                    def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
-                    println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}   ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
-                  
-                    // sh "ls -lat"
-                    //stash name: "code-stash", includes: "**/*"
-                }
-                
-                stage('load properties') {
-                  milestone()
-                  if (env.BRANCH_NAME == 'develop') {
-                    props = readProperties file:'jenkins-develop.properties'
-                  } else if (env.BRANCH_NAME =~ /^(release|hotfix)/) {
-                    props = readProperties file:'jenkins/jenkins-release.properties'
-                  } else {
-                    props = readProperties file:'jenkins-default.properties'
-                  }  
-                
-                  isBuildApp = props.build.toBoolean()
-                  isPublishArtifacts = props.publishartifacts.toBoolean()
-                  isDeploy = props.deploy.toBoolean()
-
-                }
-
-              if(isBuildApp) {
-                stage('Build maven project') {
-                  milestone ()
-                  container('maven') {
-                 //  unstash "code-stash"
-                   def mavenPom = readMavenPom file: 'pom.xml'
-                   def pomVersion = mavenPom.properties['global.version']
-                   versionParts = pomVersion.split('\\.')
-                   def queryVersion = "${versionParts[0]}.${versionParts[1]}".toString()
-                   println "${pomVersion}  , ${queryVersion}"
-                   sh 'ls -lrt && mvn -version'
-                   sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
-                   stash name: "code-stash", includes: "**/*"
-                  }
-                }
-              }
-           }
-         }   
-
-        images = images - mavenImage
-        images << helmImg 
-        images << dockerImage
-
-      if(isPublishArtifacts) {
-         slaveTemplate = new PodTemplate(label, images, workingdir, this)
-         slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) { 
-                  stage('Build helm chart and publish helm chart') {
-                  milestone()
-                  container('helm') {
-                      unstash "code-stash"
-                      def chartPath = "projectchart"
-                      def releasename ="projectchart";
-                      def helmvirtualrepo = "local";
-                      helmutil = new helmUtility();
-                      helmutil.buildAndPublishChart(chartPath,releasename,helmvirtualrepo);
-                  }
-                }
-                 
-              stage('Build docker image and publish image') {
-                  milestone ()
-                  container('docker') {
-                    unstash "code-stash"
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                      def customImage = docker.build("venkateshpakanati/cache-demo:${env.BUILD_ID}")
-                      customImage.push()
+podTemplate(cloud: clustername,
+            namespace: namespace,
+            containers: [
+              containerTemplate(name: 'maven', image: 'maven:3.6.0-jdk-8-alpine',command: 'cat',
+              envVars: [
+                envVar(key: 'MAVEN_CONFIG', value: '${workingdir}/.m2')
+              ],ttyEnabled: true,
+             // workingDir: workingdir,
+              alwaysPullImage: false),
+              containerTemplate(name: 'occlient', image: 'openshift/origin-cli:latest',command: 'cat'
+              ,ttyEnabled: true,
+             // workingDir: workingdir,
+              alwaysPullImage: false),
+              containerTemplate(name: 'helm', image: 'venkateshpakanati/helm_push:1.3',command: 'cat'
+              ,ttyEnabled: true,
+             // workingDir: workingdir,
+              alwaysPullImage: false)
+            ],
+            volumes: [
+              configMapVolume(configMapName: "settings-xml", mountPath: '/home/jenkins/.m2'),
+              emptyDirVolume(mountPath: '/home/groot/helm/repository/cache', memory: false)
+            ]            
+            ) {
+                node(POD_LABEL) {
+                    stage('Checkout Code') {
+                        milestone ()
+                        def myRepo = checkout scm
+                        def gitCommit = myRepo.GIT_COMMIT
+                        def gitLocalBranch = myRepo.GIT_LOCAL_BRANCH 
+                        def gitPrevCommit = myRepo.GIT_PREVIOUS_COMMIT
+                        def gitPrevSuccessCommit = myRepo.GIT_PREVIOUS_SUCCESSFUL_COMMIT
+                        def gitBranch = myRepo.GIT_BRANCH
+                        def shortGitCommit = "${gitCommit[0..10]}"
+                        def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+                        println "${gitCommit}   ${gitBranch}  ${shortGitCommit}  ${previousGitCommit}   ${gitLocalBranch}  ${gitPrevCommit} ${gitPrevSuccessCommit}"
                     }
-                  }
-                }
-              }
-           }       
-      }  
+                    stage('load properties') {
+                        milestone()
+                        if (env.BRANCH_NAME == 'develop') {
+                          props = readProperties file:'jenkins-develop.properties'
+                        } else if (env.BRANCH_NAME =~ /^(release|hotfix)/) {
+                          props = readProperties file:'jenkins/jenkins-release.properties'
+                        } else {
+                          props = readProperties file:'jenkins-default.properties'
+                        }  
+                      
+                        isBuildApp = props.build.toBoolean()
+                        isPublishArtifacts = props.publishartifacts.toBoolean()
+                        isDeploy = props.deploy.toBoolean()
 
-        images = images - dockerImage
-        images << helmImg
-     if(isDeploy) {
-       slaveTemplate = new PodTemplate(label, images, workingdir, this)
-       slaveTemplate.BuilderTemplate {
-           node(slaveTemplate.podlabel) {
-                  stage('Run helm') {
-                  milestone()
-                  container('helm') {
-                    helmutil = new helmUtility();
-                    helmutil.deploy()
-                  }
+                    }
+                    if(isBuildApp) {
+                      stage('Build a Maven project') {
+                        milestone ()
+                        container('maven') {
+                                  def mavenPom = readMavenPom file: 'pom.xml'
+                                  def pomVersion = mavenPom.properties['global.version']
+                                  versionParts = pomVersion.split('\\.')
+                                  def queryVersion = "${versionParts[0]}.${versionParts[1]}".toString()
+                                  println "${pomVersion}  , ${queryVersion}"
+                                  sh 'ls -lrt && mvn -version'
+                                  sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
+                            }
+                        }
+                    }  
+                    if(isPublishArtifacts) {
+                      stage('Build helm chart and publish helm chart') {
+                          milestone()
+                          container('helm') {
+                            def chartPath = "projectchart"
+                            def releasename ="projectchart";
+                            def helmvirtualrepo = "local";
+                            
+                            sh '''
+                              helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
+                              helm repo update --debug
+                              helm repo list --debug
+                            '''
+                            sh "yq w -i projectchart/Chart.yaml version ${env.BUILD_ID}"
+                            sh "yq w -i projectchart/Chart.yaml appVersion ${env.BUILD_ID}"
+                            sh "yq w -i projectchart/values.yaml image.tag ${env.BUILD_ID}"
+                                        
+                            sh '''                                
+                              chart_name="projectchart"
+                              version=$(helm inspect "$chart_name" | yq r - 'version')
+                              helm package projectchart
+                              ls -lrt
+                              chart_filename="${chart_name}-${version}.tgz"
+                              curl -u admin:AP9YMHJpDaRrnUzzyY7e452G742 -X PUT -vvv -T "${chart_filename}" "http://172.42.42.104:8081/artifactory/helm/${chart_filename}"
+                            '''
+                            sh "yq w -i projectbuildchart/Chart.yaml version ${env.BUILD_ID}"
+                            sh "yq w -i projectbuildchart/Chart.yaml appVersion ${env.BUILD_ID}"
+                            sh "yq w -i projectbuildchart/values.yaml nginx_test.image.version ${env.BUILD_ID}"
+                            sh "helm upgrade projectbuildchart projectbuildchart --tiller-namespace tiller --namespace tiller --install --force --debug"
+                          }
+                      }        
+                      stage('Build docker image and publish image') {
+                          milestone ()
+                          container('occlient') {
+                          sh """
+                            ls -lrt
+                            oc start-build projectbuildchart --from-dir . -n tiller
+                          """
+                          }
+                      }
+                    }
+                    if(isDeploy) {
+                      stage('Deploy') {
+                          milestone()
+                          container('helm') {
+                            def helmchartAppVersion = '0.1.0'
+                            sh '''
+                              helm repo add helm http://172.42.42.104:8081/artifactory/helm --username admin --password AP9YMHJpDaRrnUzzyY7e452G742
+                              helm repo update --debug
+                            '''      
+                            sh "helm upgrade projectchart http://172.42.42.104:8081/artifactory/helm/projectchart-${env.BUILD_ID}.tgz  --username admin --password AP9YMHJpDaRrnUzzyY7e452G742 --tiller-namespace tiller --namespace tiller --version ${env.BUILD_ID} --install --force --debug"
+                      
+                          }
+                      }
+                   } 
                 }
-              }           
-            }
-        }
-    } 
-  } catch(e) {
-      // println ${e}
-       throw e
-  }
+}
