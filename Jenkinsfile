@@ -71,14 +71,40 @@ podTemplate(cloud: clustername,
                                       withCredentials([usernameColonPassword(credentialsId: 'cacheproject', variable: 'artifactoryUser')]) {
                                         sh  """
                                               touch aql.json
-                                              echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"cacheproject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
+                                              echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"com/example/CacheProject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
                                               curl -X POST -o response.json --user "${artifactoryUser}" "${artifactoryApiUri}" -T aql.json
                                             """
                                       }
                                       def responseFile = readFile 'response.json'
                                       def responseJson = readJSON text: "$responseFile"
                                       echo "Version Query Response JSON = $responseJson"
-                                  
+
+                                      if (responseJson.range.total == 0) {
+                                        echo "No artifacts found for release $queryVersion"
+                                        versionNumber = "${queryVersion}.0"
+                                        echo "versionNumber = $versionNumber"
+                                      } else {
+                                        def latestVersion = null
+                                        def latestVersionPadded = null
+                                        for (result in responseJson.results) {
+                                          def version = result.name.split('\\.')[2]
+                                          echo "inside loop version = $version"
+                                          string versionPadded = version.padLeft(3, '0')
+                                          echo "inside loop versionPadded = $versionPadded"
+                                          if (latestVersion == null || versionPadded > latestVersionPadded) {
+                                            latestVersion = version as int
+                                            latestVersionPadded = versionPadded
+                                            echo "inside loop latestVersionPadded = $latestVersionPadded"
+                                          }
+                                        }
+                                        echo "latest version in repository = $latestVersion"
+                                        versionNumber = "${queryVersion}.${latestVersion + 1}"
+                                      }
+
+                                      echo "Setting version to $versionNumber"
+                                      mavenPom.properties['global.version'] = versionNumber.toString()
+                                      writeMavenPom model: mavenPom
+                                      sh "cat pom.xml"
                                       sh 'ls -lrt && mvn -version'
                                       sh "mvn -V -B -U -T 8 clean deploy -s /home/jenkins/.m2/settings.xml"
                                 }
@@ -88,9 +114,15 @@ podTemplate(cloud: clustername,
                                     sh "mvn -V -B -U -T 8 clean install -s /home/jenkins/.m2/settings.xml"
                                   }  
                                 }
+                                 if(isPublishArtifactsforRelease) {
+                                  stage("mvn repo cleanup") {
+                                    sh "mvn build-helper:remove-project-artifact -s /home/jenkins/.m2/settings.xml"
+                                  }  
+                                } 
                             }
                         }
-                    }   
+                    }
+                   
                     if(isPublishArtifacts) {
                       stage('Build helm chart and publish helm chart') {
                           milestone()
