@@ -42,6 +42,7 @@ service:
   port: 8080
   name: projectchart
   internalPort: 8080
+  targetPort: 8080
 
 ingress:
   enabled: false
@@ -69,7 +70,16 @@ routes:
       targetPort: 8080
       subdomain:
       qualifier:
-      host: test.example.com  
+      host: test.example.com
+probe:
+  enabled: true
+  timeoutSeconds: 5
+  readiness:
+    initialDelaySeconds: 120
+    periodSeconds: 30
+  liveness:
+    initialDelaySeconds: 120
+    periodSeconds: 30        
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
