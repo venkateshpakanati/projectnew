@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ template "projectchart.fullname" . }}
+  labels:
+    app: {{ template "projectchart.name" . }}
+    chart: {{ template "projectchart.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  to:
+    kind: Service
+    name: {{ $.Values.service.name }}
+  port:
+    targetPort: {{ $.Values.routes.default.targetPort }}
+  path: {{ $.Values.routes.default.path }}
