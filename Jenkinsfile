@@ -71,7 +71,7 @@ podTemplate(cloud: clustername,
                                       withCredentials([usernameColonPassword(credentialsId: 'cacheproject', variable: 'artifactoryUser')]) {
                                         sh  """
                                               touch aql.json
-                                              echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"cacheproject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
+                                              echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"com/example/CacheProject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
                                               curl -X POST -o response.json --user "${artifactoryUser}" "${artifactoryApiUri}" -T aql.json
                                             """
                                       }

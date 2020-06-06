@@ -82,8 +82,8 @@
 	<distributionManagement>
 		<repository>
 			<id>central</id>
-			<name>181a0b3d3913-releases</name>
-			<url>http://172.42.42.104:8081/artifactory/libs-release-local</url>
+			<name>cacheproject</name>
+			<url>http://172.42.42.104:8082/artifactory/cacheproject</url>
 		</repository>
     </distributionManagement>
 
