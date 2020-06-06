@@ -56,7 +56,7 @@ podTemplate(cloud: clustername,
                         isPublishArtifacts = props.publishartifacts.toBoolean()
                         isDeploy = props.deploy.toBoolean()
                         artifactoryApiUri = props.artifactoryApiUri
-                        isPublishArtifactsforRelease = props.isPublishArtifactsforRelease
+                        isPublishArtifactsforRelease = props.isPublishArtifactsforRelease.toBoolean()
                     }
                     if(isBuildApp) {
                         stage('Build a Maven project') {
@@ -72,7 +72,7 @@ podTemplate(cloud: clustername,
                                         sh  """
                                               touch aql.json
                                               echo 'items.find({"name":{"\$match":"$queryVersion*"},"repo":{"\$eq":"cacheproject"},"path":{"\$eq":"cacheproject"},"type":{"\$eq":"folder"}}).include("repo","path","name").sort({"\$desc":["name"]})' >> aql.json
-                                              curl -X POST -o response.json --user "${artifactoryUser}" "${artifactoryApiUri}" -T aql-ver.json
+                                              curl -X POST -o response.json --user "${artifactoryUser}" "${artifactoryApiUri}" -T aql.json
                                             """
                                       }
                                       def responseFile = readFile 'response.json'
