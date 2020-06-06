@@ -78,6 +78,32 @@ podTemplate(cloud: clustername,
                                       def responseFile = readFile 'response.json'
                                       def responseJson = readJSON text: "$responseFile"
                                       echo "Version Query Response JSON = $responseJson"
+
+                                      if (responseJson.range.total == 0) {
+                                        echo "No artifacts found for release $queryVersion"
+                                        versionNumber = "${queryVersion}.0"
+                                        echo "versionNumber = $versionNumber"
+                                      } else {
+                                        def latestVersion = null
+                                        def latestVersionPadded = null
+                                        for (result in responseJson.results) {
+                                          def version = result.name.split('\\.')[2]
+                                          echo "inside loop version = $version"
+                                          string versionPadded = version.padLeft(3, '0')
+                                          echo "inside loop versionPadded = $versionPadded"
+                                          if (latestVersion == null || versionPadded > latestVersionPadded) {
+                                            latestVersion = version as int
+                                            latestVersionPadded = versionPadded
+                                            echo "inside loop latestVersionPadded = $latestVersionPadded"
+                                          }
+                                        }
+                                        echo "latest version in repository = $latestVersion"
+                                        versionNumber = "${queryVersion}.${latestVersion + 1}"
+                                      }
+
+                                      echo "Setting version to $versionNumber"
+                                      mavenPom.properties['global.version'] = versionNumber.toString()
+                                      writeMavenPom model: mavenPom
                                   
                                       sh 'ls -lrt && mvn -version'
                                       sh "mvn -V -B -U -T 8 clean deploy -s /home/jenkins/.m2/settings.xml"
