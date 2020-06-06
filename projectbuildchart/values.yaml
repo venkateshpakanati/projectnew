@@ -1,0 +1,6 @@
+nginx_test:
+  image:
+    name: venkateshpakanati/cache-demo
+    version: latest
+    pushSecret: test-secret
+    pullSecret: test-secret
