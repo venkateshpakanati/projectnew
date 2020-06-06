@@ -104,7 +104,7 @@ podTemplate(cloud: clustername,
                                       echo "Setting version to $versionNumber"
                                       mavenPom.properties['global.version'] = versionNumber.toString()
                                       writeMavenPom model: mavenPom
-                                  
+                                      sh "cat pom.xml"
                                       sh 'ls -lrt && mvn -version'
                                       sh "mvn -V -B -U -T 8 clean deploy -s /home/jenkins/.m2/settings.xml"
                                 }
@@ -116,7 +116,12 @@ podTemplate(cloud: clustername,
                                 }
                             }
                         }
-                    }   
+                    }
+                    if(isPublishArtifactsforRelease) {
+                      stage("mvn repo cleanup") {
+                        sh "mvn build-helper:remove-project-artifact"
+                      }  
+                    } 
                     if(isPublishArtifacts) {
                       stage('Build helm chart and publish helm chart') {
                           milestone()
