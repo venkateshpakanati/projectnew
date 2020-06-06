@@ -14,3 +14,4 @@ spec:
   port:
     targetPort: {{ $.Values.routes.default.targetPort }}
   path: {{ $.Values.routes.default.path }}
+  hostname: {{ $.Values.routes.items.host }}
