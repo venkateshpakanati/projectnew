@@ -4,6 +4,13 @@
 
 replicaCount: 1
 
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 20
+  targetMemoryUtilizationPercentage: 20
+
 image:
   repository: venkateshpakanati/cache-demo
   tag: latest
@@ -33,6 +40,8 @@ securityContext: {}
 service:
   type: NodePort
   port: 8080
+  name: projectchart
+  internalPort: 8080
 
 ingress:
   enabled: false
@@ -47,6 +56,20 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+routes:
+  default:
+    enabled: true
+    subdomain:
+    targetPort: 8080
+    path: /
+  items:
+    default:
+      enabled: true
+      targetPort: 8080
+      subdomain:
+      qualifier:
+      host: test.example.com  
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
