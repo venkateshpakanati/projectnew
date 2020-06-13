@@ -11,7 +11,7 @@ VOLUME /tmp
 EXPOSE 8080
 
 # The application's jar file
-ARG JAR_FILE=target/CacheProject-1.0.0.jar
+ARG JAR_FILE=target/CacheProject-*.jar
 
 # Add the application's jar to the container
 COPY ${JAR_FILE} CacheProject-demo.jar
