@@ -47,14 +47,11 @@ podTemplate(cloud: clustername,
     //      props = readProperties file:'jenkins-default.properties'
     //   }  
      
-   
-      isDeploy = props.deploy.toBoolean()
-
     }
 
  
-  if(isDeploy) {
-    stage('Deploy') {
+  
+                     stage('Deploy') {
                           milestone()
                           container('helm') {
                             def helmchartAppVersion = targetVersion
@@ -66,6 +63,6 @@ podTemplate(cloud: clustername,
                       
                           }
                       }
-  } 
+
  }
 }
