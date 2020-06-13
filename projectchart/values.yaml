@@ -75,10 +75,10 @@ probe:
   enabled: true
   timeoutSeconds: 5
   readiness:
-    initialDelaySeconds: 240
+    initialDelaySeconds: 270
     periodSeconds: 30
   liveness:
-    initialDelaySeconds: 270
+    initialDelaySeconds: 290
     periodSeconds: 30        
 
 resources:
