@@ -49,6 +49,14 @@ podTemplate(cloud: clustername,
     //   } else {
     //      props = readProperties file:'jenkins-default.properties'
     //   }  
+
+            if (params.RELEASE == null || params.RELEASE.contains('latest')) {
+              def mavenPom = readMavenPom file: 'pom.xml'
+              def pomVersion = mavenPom.properties['global.version']
+              versionNumber = "${pomVersion}"
+            } else {
+              targetVersion = params.RELEASE
+            }
      
     }
 
