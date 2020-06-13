@@ -1,5 +1,8 @@
 def label = "worker-${UUID.randomUUID().toString()}"
 
+def clustername = "kubernetes"
+def namespace = "tiller"
+
 def targetVersion = null
 
 properties([
